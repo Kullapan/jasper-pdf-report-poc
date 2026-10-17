@@ -7,9 +7,9 @@ certs/
 *.pem
 
 # Build & Dependencies
-backend/.gradle/
-backend/build/
-backend/target/
+**/target/
+**/build/
+**/.gradle/
 frontend/node_modules/
 frontend/dist/
 
