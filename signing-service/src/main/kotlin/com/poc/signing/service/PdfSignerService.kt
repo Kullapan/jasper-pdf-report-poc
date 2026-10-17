@@ -1,5 +1,7 @@
-package com.poc.claim.service
+package com.poc.signing.service
 
+import com.poc.signing.model.CertificateInfoDto
+import com.poc.signing.model.SignedPdfOutcome
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface
@@ -19,12 +21,6 @@ import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.cert.X509Certificate
 import java.util.Calendar
-
-data class SignedPdfOutcome(
-    val signedPdfBytes: ByteArray,
-    val sha256Checksum: String,
-    val signerSubject: String
-)
 
 @Service
 class PdfSignerService(
@@ -57,7 +53,8 @@ class PdfSignerService(
         val candidates = listOf(
             File(configuredPath),
             File("../certs/keystore.p12"),
-            File("./certs/keystore.p12")
+            File("./certs/keystore.p12"),
+            File("/certs/keystore.p12")
         )
         return candidates.firstOrNull { it.exists() && it.isFile }
             ?: throw IllegalStateException(
@@ -65,18 +62,34 @@ class PdfSignerService(
             )
     }
 
-    fun signPdfInMemory(unsignedPdfBytes: ByteArray, claimNumber: String, version: Int): SignedPdfOutcome {
+    fun getCertificateInfo(): CertificateInfoDto {
+        val cert = certificateChain.first()
+        return CertificateInfoDto(
+            subjectDN = cert.subjectX500Principal.name,
+            issuerDN = cert.issuerX500Principal.name,
+            serialNumberHex = cert.serialNumber.toString(16).uppercase(),
+            validFrom = cert.notBefore.toInstant().toString(),
+            validUntil = cert.notAfter.toInstant().toString()
+        )
+    }
+
+    fun signPdfInMemory(
+        unsignedPdfBytes: ByteArray,
+        claimNumber: String,
+        version: Int,
+        customReason: String? = null
+    ): SignedPdfOutcome {
         Loader.loadPDF(unsignedPdfBytes).use { document ->
             val signature = PDSignature().apply {
                 setFilter(PDSignature.FILTER_ADOBE_PPKLITE)
                 setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED)
                 name = signerSubjectDN
-                location = "Bangkok, Thailand (Local PoC)"
-                reason = "Official Claim Report ($claimNumber v$version) - Detached CMS SHA-256"
+                location = "Bangkok, Thailand (Isolated Signing Service)"
+                reason = customReason ?: "Official Claim Report ($claimNumber v$version) - Detached CMS SHA-256"
                 signDate = Calendar.getInstance()
             }
 
-            // Invisible signature: register PDSignature + SignatureInterface without any visual widget
+            // Invisible signature: register PDSignature + SignatureInterface without visual widget
             val signatureInterface = SignatureInterface { contentStream ->
                 createDetachedCmsSignature(contentStream)
             }

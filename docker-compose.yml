@@ -16,6 +16,28 @@ services:
       timeout: 5s
       retries: 10
 
+  signing-service:
+    build:
+      context: ./signing-service
+      dockerfile: Dockerfile
+    container_name: claim-poc-signing
+    environment:
+      KEYSTORE_PATH: ${KEYSTORE_PATH:-/certs/keystore.p12}
+      KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD:-changeit_local_poc}
+      KEYSTORE_ALIAS: ${KEYSTORE_ALIAS:-claimsigner}
+    volumes:
+      - ./certs:/certs:ro
+    ports:
+      - "8081:8081"
+
+  pdf-generator-service:
+    build:
+      context: ./pdf-generator-service
+      dockerfile: Dockerfile
+    container_name: claim-poc-pdf-generator
+    ports:
+      - "8082:8082"
+
   backend:
     build:
       context: ./backend
@@ -24,15 +46,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      signing-service:
+        condition: service_started
+      pdf-generator-service:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-claimdb}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-claimuser}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-claimpass_local_poc}
-      KEYSTORE_PATH: ${KEYSTORE_PATH:-/certs/keystore.p12}
-      KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD:-changeit_local_poc}
-      KEYSTORE_ALIAS: ${KEYSTORE_ALIAS:-claimsigner}
-    volumes:
-      - ./certs:/certs:ro
+      PDF_GENERATOR_SERVICE_URL: http://pdf-generator-service:8082
+      SIGNING_SERVICE_URL: http://signing-service:8081
     ports:
       - "8080:8080"
 

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.poc.signing.SigningServiceTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.590 s -- in com.poc.signing.SigningServiceTest

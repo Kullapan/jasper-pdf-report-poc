@@ -1,0 +1,15 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: digital-signing-service
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+
+keystore:
+  path: ${KEYSTORE_PATH:../certs/keystore.p12}
+  password: ${KEYSTORE_PASSWORD:changeit_local_poc}
+  alias: ${KEYSTORE_ALIAS:claimsigner}

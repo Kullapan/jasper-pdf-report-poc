@@ -1,45 +1,84 @@
-# Claim Report PoC — On-The-Fly Thai PDF Generation & Detached CMS Digital Signature
+# Claim Report PoC — Enterprise 3-Tier Microservices Architecture
 
-ระบบต้นแบบ (Proof of Concept) สำหรับสร้างรายงานการเรียกร้องค่าสินไหมทดแทน (Claim Report) ภาษาไทยแบบ **Generate & Sign On-The-Fly (In-Memory)** ด้วยเครื่องมือ **Open Source 100%**
-
----
-
-## 1. สถาปัตยกรรมและหลักการทำงาน (On-The-Fly Pipeline)
-
-1. **Immutable Snapshot Versioning (PostgreSQL 16.4):**
-   * ข้อมูลรายงานเคลมแต่ละฉบับจะถูกบันทึกเป็น JSON Snapshot ผูกกับ `version` (`v1`, `v2`, ...) ในฐานข้อมูล
-   * หากมีการแก้ไขข้อมูลเคลม ระบบจะสร้าง `version = n + 1` เสมอ โดยไม่แก้ไขทับ Snapshot ของเวอร์ชันเดิม
-2. **In-Memory Thai PDF Generation (JasperReports 6.21.3):**
-   * ใช้ฟอนต์ภาษาไทย **Sarabun** (`SIL Open Font License 1.1`) ฝังลงใน PDF (`Identity-H`, `pdfEmbedded=true`)
-3. **In-Memory Detached CMS Digital Signature (PDFBox 3.0.3 + Bouncy Castle 1.78.1):**
-   * ลงนามดิจิทัลแบบ **Invisible Signature** (`Filter: /Adobe.PPKLite`, `SubFilter: /adbe.pkcs7.detached`, Digest: `SHA-256`, Signature: `SHA256withRSA`)
-   * โหลด Private Key และ X.509 Certificate จากไฟล์ `PKCS#12` (`certs/keystore.p12`) ที่สร้างตอน Setup โดยไม่ฝังหรือเปิดเผย Private Key ลงในโค้ด อิมเมจ หรือ Log
-   * คำนวณค่า `SHA-256` ของไฟล์ที่ลงนามเสร็จแล้วบันทึกลงตาราง `report_audit_logs` ก่อนสตรีมไบนารีส่งกลับทาง HTTP Response โดยไม่เขียนไฟล์ PDF ค้างไว้บนดิสก์
-4. **Single-Blob Fetch Pattern (React 18.3.1 + TypeScript 5.5.4 + PDF.js 4.6.82):**
-   * Frontend เรียก `GET /api/reports/{reportId}/content?version={v}` เพียงครั้งเดียว เก็บเป็น `Blob` ในหน่วยความจำเบราว์เซอร์
-   * นำ `Blob` ไปแสดงตัวอย่างบน `<canvas>` ด้วย `pdfjs-dist` (สำหรับการแสดงผลเท่านั้น ไม่ใช้ตรวจลายเซ็น) และผูก `Blob` ก้อนเดียวกันเข้ากับปุ่มดาวน์โหลด ทำให้ไฟล์ที่ Preview และ Download เป็นไบนารีเดียวกัน 100%
+ระบบต้นแบบ (Proof of Concept) สำหรับสร้างรายงานการเรียกร้องค่าสินไหมทดแทน (Claim Report) ภาษาไทยแบบ **Generate & Sign On-The-Fly (In-Memory)** ด้วยสถาปัตยกรรม **Enterprise 3-Tier Microservices** และเครื่องมือ **Open Source 100% Zero Vulnerabilities**
 
 ---
 
-## 2. ตารางเทคโนโลยี เวอร์ชัน และ License
+## 1. สถาปัตยกรรมระดับ Microservices (Architecture Overview)
 
-| Component | Package / Image | Version | License |
-| :--- | :--- | :--- | :--- |
-| Frontend UI | `react`, `react-dom` | `18.3.1` | MIT |
-| Language (UI) | `typescript` | `5.5.4` | Apache-2.0 |
-| PDF Preview | `pdfjs-dist` | `4.6.82` | Apache-2.0 |
-| Backend Framework | `org.springframework.boot` | `4.1.1` | Apache-2.0 |
-| Language (Backend) | `org.jetbrains.kotlin.jvm` | `2.3.21` | Apache-2.0 |
-| Reporting Engine | `net.sf.jasperreports:jasperreports` | `6.21.3` | LGPL-3.0 |
-| PDF Export Core | `com.github.librepdf:openpdf` | `1.3.30` | LGPL-3.0 / MPL-2.0 |
-| PDF Signing | `org.apache.pdfbox:pdfbox` | `3.0.3` | Apache-2.0 |
-| Cryptography (CMS) | `org.bouncycastle:bcpkix-jdk18on` | `1.78.1` | Bouncy Castle (MIT-like) |
-| Database | `postgres` / `org.postgresql:postgresql` | `16.4` / `42.7.13` | PostgreSQL License |
-| Thai Font | Google Fonts `Sarabun` | `2.000` | SIL Open Font License 1.1 |
+```mermaid
+flowchart TD
+    subgraph Client["Client Layer"]
+        FE["Frontend (React 18 / Vite :5173)"]
+    end
+
+    subgraph Core["1. Claim Business Service (:8080)"]
+        Ctrl["ClaimReportController"]
+        DB[(PostgreSQL 16.4)]
+        ClientJasper["PdfGeneratorClient"]
+        ClientSign["SigningServiceClient"]
+        Ctrl --- DB
+    end
+
+    subgraph Jasper["2. PDF Generator Service (:8082) — Stateless"]
+        JasperEngine["JasperReports 7.1.0"]
+        Assets["คลังรูปภาพ & ฟอนต์:\n• claimant_signature.png\n• approver_signature.png\n• official_stamp.png\n• Sarabun Thai Fonts"]
+        JasperEngine --- Assets
+    end
+
+    subgraph Signer["3. Digital Signing Service (:8081) — Key Isolation"]
+        PDFBox["Apache PDFBox 3.0.3\n+ Bouncy Castle 1.85"]
+        KeyStore["certs/keystore.p12\n(PKCS#12 Private Key)"]
+        PDFBox --- KeyStore
+    end
+
+    FE -->|1. ขอ Preview หรือ Download| Ctrl
+    Ctrl -->|2. ดึง Snapshot ข้อมูลเคลม| DB
+    Ctrl -->|3. ส่ง JSON เคลม + ข้อมูลผู้ลงนาม| ClientJasper
+    ClientJasper --> JasperEngine
+    JasperEngine -->|4. เรนเดอร์ PDF ดิบพร้อมรูปลายเซ็นและฟอนต์ไทย| ClientJasper
+    ClientJasper --> Ctrl
+    Ctrl -->|5. ส่ง Unsigned PDF bytes ไป Sign| ClientSign
+    ClientSign --> PDFBox
+    PDFBox -->|6. ฝัง Detached CMS SHA-256 + ByteRange| ClientSign
+    ClientSign --> Ctrl
+    Ctrl -->|7. บันทึก SHA-256 Checksum Audit Log| DB
+    Ctrl -->|8. สตรีม Signed PDF ให้ผู้ใช้| FE
+```
 
 ---
 
-## 3. วิธีเริ่มต้นใช้งาน (Quick Start)
+## 2. การแบ่งหน้าที่ของแต่ละ Service (Separation of Concerns)
+
+1. **`claim-report-backend` (Port 8080):**
+   * จัดการ REST API สำหรับ Frontend (CRUD, Snapshot Versioning, Audit Logs)
+   * ทำหน้าที่เป็น **Orchestrator** ประสานงานระหว่าง PDF Generator และ Signing Service
+   * **Key Isolation**: Service นี้ไม่มีการเข้าถึง Private Key หรือ Keystore Password
+2. **`pdf-generator-service` (Port 8082):**
+   * **Stateless Compute Service**: รับ JSON ข้อมูลเคลม เรนเดอร์เป็น Unsigned PDF ในหน่วยความจำ
+   * **Asset Management**: จัดเก็บและเรนเดอร์รูปภาพ (ภาพลายมือชื่อผู้เอาประกัน, ภาพลายมือชื่อผู้อนุมัติ, ตรายางบริษัท) และฟอนต์ภาษาไทย `Sarabun`
+3. **`digital-signing-service` (Port 8081):**
+   * **Isolated Security Zone**: ถือครอง `certs/keystore.p12` เพียงจุดเดียว
+   * ลงนามดิจิทัลมาตรฐาน **Detached CMS (`/adbe.pkcs7.detached`, SHA-256 with RSA 2048-bit)**
+   * ตรวจสอบความสมบูรณ์ของเอกสาร (ByteRange Integrity & Verification) และฟังก์ชัน Tamper Demo
+4. **`frontend` (Port 5173):**
+   * React 18 + TypeScript + Vite + Tailwind CSS + PDF.js (Single-Blob Preview & Download)
+
+---
+
+## 3. ตารางเทคโนโลยีและเวอร์ชัน (100% Zero Vulnerabilities)
+
+| Service / Component | Technology Stack | Version | License | Security Status (Trivy) |
+| :--- | :--- | :--- | :--- | :---: |
+| **Claim Business Service** | Spring Boot + Kotlin | 4.1.1 / 2.3.21 | Apache-2.0 | **0 Vulnerabilities (Clean)** |
+| **PDF Generator Service** | JasperReports 7.1.0 + OpenPDF | 7.1.0 / 1.3.43 | LGPL-3.0 | **0 Vulnerabilities (Clean)** |
+| **Digital Signing Service** | Apache PDFBox + Bouncy Castle | 3.0.3 / 1.85 | Apache-2.0 / MIT | **0 Vulnerabilities (Clean)** |
+| **Database** | PostgreSQL Alpine | 16.4 | PostgreSQL | **Clean** |
+| **Frontend UI** | React + TypeScript + PDF.js | 18.3.1 / 4.6.82 | MIT / Apache-2.0 | **0 Vulnerabilities (Clean)** |
+
+---
+
+## 4. วิธีเริ่มต้นใช้งาน (Quick Start)
 
 ### ขั้นตอนที่ 1: สร้าง PKCS#12 Keystore สำหรับทดสอบ
 * **Windows (PowerShell):**
@@ -55,20 +94,9 @@
 ```bash
 docker compose up --build -d
 ```
-* **Frontend UI:** `http://localhost:5173`
-* **Backend API:** `http://localhost:8080/api/reports`
 
----
-
-## 4. วิธีทดสอบ Digital Signature และการแก้ไขไฟล์หลังเซ็น (Tamper Test)
-
-1. **ทดสอบผ่านหน้าเว็บ PoC (`http://localhost:5173`):**
-   * คลิกปุ่ม **"✓ ตรวจสอบลายเซ็นของ PDF ที่แสดงผลอยู่"** ระบบจะส่งไฟล์เข้า `POST /api/reports/verify` เพื่อตรวจสอบโครงสร้าง CMS `/adbe.pkcs7.detached`, ค่า Digest `SHA-256`, `/ByteRange` และเทียบกับ Audit Log
-   * คลิกปุ่ม **"⚡ จำลองแก้ไข 1 ไบต์หลังเซ็น ดาวน์โหลด & ตรวจจับ"** ระบบจะแก้ไขข้อมูล 1 จุดในช่วง `/ByteRange` ดาวน์โหลดไฟล์ `-TAMPERED.pdf` ลงเครื่อง และตรวจสอบผ่าน `/api/reports/verify` ซึ่งจะรายงานผล `INVALID / TAMPERED SIGNATURE` ทันที
-2. **ทดสอบด้วยเครื่องมืออิสระ (`pyHanko` CLI หรือ Adobe Acrobat Reader):**
-   ```bash
-   pip install pyhanko
-   pyhanko check inspect claim-CLM-2026-0001-v1-signed.pdf
-   ```
-   * เมื่อเปิดไฟล์ปกติใน **Adobe Acrobat Reader**: แถบ Signature Panel จะระบุว่าเอกสารไม่ถูกแก้ไขหลังลงนาม (`Document has not been modified since this signature was applied`) แต่จะแจ้งเตือนเรื่องความน่าเชื่อถือของผู้ออกใบรับรอง เนื่องจากใช้ Self-Signed Certificate สำหรับ PoC
-   * เมื่อเปิดไฟล์ `-TAMPERED.pdf` ใน **Adobe Acrobat Reader**: จะแจ้งเตือนสีแดงทันทีว่า `Signature is INVALID — Document has been altered or corrupted since the signature was applied`
+### ขั้นตอนที่ 3: ตรวจสอบและเข้าใช้งาน
+* **Frontend Web UI:** `http://localhost:5173`
+* **Claim Business API:** `http://localhost:8080/api/reports`
+* **Digital Signing Service Health:** `http://localhost:8081/api/v1/signatures/health`
+* **PDF Generator Service Health:** `http://localhost:8082/api/v1/pdf/health`

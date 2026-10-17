@@ -1,11 +1,10 @@
 package com.poc.claim.controller
 
+import com.poc.claim.client.SignatureVerificationResponse
 import com.poc.claim.model.ClaimDetailResponse
 import com.poc.claim.model.ClaimSummaryResponse
 import com.poc.claim.model.CreateOrUpdateClaimRequest
 import com.poc.claim.service.ClaimReportService
-import com.poc.claim.service.PdfVerificationService
-import com.poc.claim.service.SignatureVerificationResponse
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -19,8 +18,7 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/reports")
 class ClaimReportController(
-    private val claimReportService: ClaimReportService,
-    private val pdfVerificationService: PdfVerificationService
+    private val claimReportService: ClaimReportService
 ) {
 
     @GetMapping
@@ -75,22 +73,20 @@ class ClaimReportController(
     }
 
     /**
-     * Independent verification endpoint: accepts any PDF file and verifies its detached CMS signature
-     * and SHA-256 ByteRange integrity without needing the private key.
+     * Independent verification endpoint: forwards to digital-signing-service and checks PostgreSQL audit log.
      */
     @PostMapping("/verify", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun verifyUploadedPdf(@RequestParam("file") file: MultipartFile): ResponseEntity<SignatureVerificationResponse> {
-        val result = pdfVerificationService.verifyPdfBytes(file.bytes)
+        val result = claimReportService.verifyPdf(file.bytes)
         return ResponseEntity.ok(result)
     }
 
     /**
-     * Helper endpoint for PoC tamper testing: accepts a signed PDF file and returns a 1-byte tampered copy
-     * so users can test how `/api/reports/verify`, Adobe Acrobat Reader, or pyHanko detect post-signing modification.
+     * Helper endpoint for PoC tamper testing: forwards to digital-signing-service to generate a tampered copy.
      */
     @PostMapping("/tamper-demo", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createTamperedPdfForDemo(@RequestParam("file") file: MultipartFile): ResponseEntity<ByteArray> {
-        val tamperedBytes = pdfVerificationService.createTamperedCopy(file.bytes)
+        val tamperedBytes = claimReportService.tamperPdf(file.bytes)
         val originalName = file.originalFilename?.removeSuffix(".pdf") ?: "claim-report"
         val contentDisposition = ContentDisposition.builder("attachment")
             .filename("${originalName}-TAMPERED.pdf", StandardCharsets.UTF_8)

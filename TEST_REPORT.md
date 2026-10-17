@@ -1,7 +1,7 @@
 # รายงานผลการทดสอบระบบ (User Acceptance Test Report — Claim Report PoC)
 
 * **วันที่ดำเนินการทดสอบ:** 17 ตุลาคม 2569 (2026-10-17)
-* **สภาพแวดล้อม (Environment):** Docker Compose บน `localhost` (`React 18.3.1 + TS 5.5.4`, `Spring Boot 4.1.1 + Kotlin 2.3.21`, `JasperReports 7.1.0 + OpenPDF 1.3.43.jaspersoft.2`, `PDFBox 3.0.3 + Bouncy Castle 1.85`, `PostgreSQL 16.4`)
+* **สภาพแวดล้อม (Environment):** 3-Tier Microservices บน Docker Compose (`React 18.3.1 + TS 5.5.4`, `Claim Business Core :8080`, `Stateless Jasper PDF Generator with Image Assets :8082`, `Isolated Digital Signing Service :8081`, `PostgreSQL 16.4`)
 * **สรุปผลการทดสอบ:** **ผ่านทั้งหมด 6 / 6 Test Cases (100% PASS)**
 
 ---

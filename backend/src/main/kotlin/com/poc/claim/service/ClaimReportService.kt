@@ -1,6 +1,10 @@
 package com.poc.claim.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.poc.claim.client.PdfGeneratorClient
+import com.poc.claim.client.SignatureVerificationResponse
+import com.poc.claim.client.SignedPdfResponseDto
+import com.poc.claim.client.SigningServiceClient
 import com.poc.claim.model.*
 import com.poc.claim.repository.ClaimRepository
 import com.poc.claim.repository.ClaimSnapshotRepository
@@ -11,6 +15,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
+import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -21,8 +26,8 @@ class ClaimReportService(
     private val claimRepository: ClaimRepository,
     private val snapshotRepository: ClaimSnapshotRepository,
     private val auditLogRepository: ReportAuditLogRepository,
-    private val jasperReportService: JasperReportService,
-    private val pdfSignerService: PdfSignerService,
+    private val pdfGeneratorClient: PdfGeneratorClient,
+    private val signingServiceClient: SigningServiceClient,
     private val objectMapper: ObjectMapper
 ) {
 
@@ -132,7 +137,7 @@ class ClaimReportService(
         )
 
         val jsonString = objectMapper.writeValueAsString(payload)
-        val snapshotHash = pdfSignerService.sha256Hex(jsonString.toByteArray(Charsets.UTF_8))
+        val snapshotHash = sha256Hex(jsonString.toByteArray(Charsets.UTF_8))
 
         val snapshotEntity = ClaimSnapshotEntity(
             claimId = claim.id,
@@ -202,7 +207,7 @@ class ClaimReportService(
     }
 
     @Transactional
-    fun generateAndSignOnTheFly(reportId: UUID, requestedVersion: Int?): Pair<SignedPdfOutcome, ClaimSnapshotPayload> {
+    fun generateAndSignOnTheFly(reportId: UUID, requestedVersion: Int?): Pair<SignedPdfResponseDto, ClaimSnapshotPayload> {
         val claim = claimRepository.findById(reportId).orElseThrow {
             ResponseStatusException(HttpStatus.NOT_FOUND, "ไม่พบรายงานเคลมรหัส $reportId")
         }
@@ -216,17 +221,17 @@ class ClaimReportService(
 
         val payload = objectMapper.readValue(snapshotEntity.dataSnapshot, ClaimSnapshotPayload::class.java)
 
-        // Step 1: In-Memory PDF Generation via JasperReports (with embedded Sarabun Thai font)
-        val unsignedPdfBytes = jasperReportService.generateUnsignedPdfBytes(payload, pdfSignerService.signerSubjectDN)
+        // Step 1: Call pdf-generator-service (:8082) to render PDF with fonts and signature images
+        val unsignedPdfBytes = pdfGeneratorClient.renderClaimReport(payload)
 
-        // Step 2: In-Memory Detached CMS Digital Signature via PDFBox 3 + Bouncy Castle
-        val signedOutcome = pdfSignerService.signPdfInMemory(
+        // Step 2: Call signing-service (:8081) to apply CMS detached digital signature
+        val signedOutcome = signingServiceClient.signPdf(
             unsignedPdfBytes = unsignedPdfBytes,
             claimNumber = payload.claimNumber,
             version = payload.version
         )
 
-        // Step 3: Record Audit Log of the generated & signed PDF SHA-256 checksum
+        // Step 3: Record Audit Log of the generated & signed PDF SHA-256 checksum in PostgreSQL
         auditLogRepository.save(
             ReportAuditLogEntity(
                 claimId = claim.id,
@@ -238,5 +243,25 @@ class ClaimReportService(
         )
 
         return Pair(signedOutcome, payload)
+    }
+
+    fun verifyPdf(pdfBytes: ByteArray): SignatureVerificationResponse {
+        val rawVerify = signingServiceClient.verifyPdf(pdfBytes)
+        val auditMatches = auditLogRepository.findBySha256Checksum(rawVerify.fileSha256)
+        val matchedAudit = auditMatches.firstOrNull()
+
+        return rawVerify.copy(
+            matchedAuditLog = matchedAudit != null,
+            matchedReportVersion = matchedAudit?.version
+        )
+    }
+
+    fun tamperPdf(pdfBytes: ByteArray): ByteArray {
+        return signingServiceClient.tamperPdf(pdfBytes)
+    }
+
+    fun sha256Hex(bytes: ByteArray): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+        return digest.joinToString("") { "%02x".format(it) }
     }
 }

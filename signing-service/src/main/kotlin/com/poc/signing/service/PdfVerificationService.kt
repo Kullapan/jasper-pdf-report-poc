@@ -1,10 +1,7 @@
-package com.poc.claim.service
+package com.poc.signing.service
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.poc.claim.repository.ReportAuditLogRepository
+import com.poc.signing.model.SignatureVerificationResult
 import org.apache.pdfbox.Loader
-import org.bouncycastle.asn1.cms.AttributeTable
-import org.bouncycastle.asn1.cms.CMSAttributes
 import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cms.CMSProcessableByteArray
@@ -13,49 +10,20 @@ import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.springframework.stereotype.Service
 import java.security.MessageDigest
-import java.util.HexFormat
-
-data class SignatureVerificationResponse(
-    @get:JsonProperty("isValid")
-    val isValid: Boolean,
-    @get:JsonProperty("isTampered")
-    val isTampered: Boolean,
-    val signatureFound: Boolean,
-    val filter: String?,
-    val subFilter: String?,
-    val digestAlgorithmOid: String?,
-    val signerSubject: String?,
-    val signerIssuer: String?,
-    val serialNumberHex: String?,
-    val signDate: String?,
-    val reason: String?,
-    val byteRange: List<Int>?,
-    val coversWholeDocument: Boolean,
-    val fileSha256: String,
-    val matchedAuditLog: Boolean,
-    val matchedReportVersion: Int?,
-    val selfSignedNotice: String,
-    val message: String
-)
 
 @Service
-class PdfVerificationService(
-    private val auditLogRepository: ReportAuditLogRepository
-) {
+class PdfVerificationService {
 
-    fun verifyPdfBytes(pdfBytes: ByteArray): SignatureVerificationResponse {
+    fun verifyPdfBytes(pdfBytes: ByteArray): SignatureVerificationResult {
         val fileSha256 = MessageDigest.getInstance("SHA-256")
             .digest(pdfBytes)
             .joinToString("") { "%02x".format(it) }
-
-        val auditMatches = auditLogRepository.findBySha256Checksum(fileSha256)
-        val matchedAudit = auditMatches.firstOrNull()
 
         return try {
             Loader.loadPDF(pdfBytes).use { document ->
                 val signatures = document.signatureDictionaries
                 if (signatures.isEmpty()) {
-                    return SignatureVerificationResponse(
+                    return SignatureVerificationResult(
                         isValid = false,
                         isTampered = false,
                         signatureFound = false,
@@ -70,8 +38,6 @@ class PdfVerificationService(
                         byteRange = null,
                         coversWholeDocument = false,
                         fileSha256 = fileSha256,
-                        matchedAuditLog = false,
-                        matchedReportVersion = null,
                         selfSignedNotice = "No signature present in PDF.",
                         message = "ไม่พบลายเซ็นดิจิทัล (PDSignature) ในไฟล์ PDF นี้"
                     )
@@ -114,7 +80,7 @@ class PdfVerificationService(
                 val cryptoValid = signerInfo.verify(verifier)
                 val overallValid = cryptoValid && coversWholeDoc
 
-                SignatureVerificationResponse(
+                SignatureVerificationResult(
                     isValid = overallValid,
                     isTampered = !overallValid,
                     signatureFound = true,
@@ -129,8 +95,6 @@ class PdfVerificationService(
                     byteRange = byteRangeList,
                     coversWholeDocument = coversWholeDoc,
                     fileSha256 = fileSha256,
-                    matchedAuditLog = matchedAudit != null,
-                    matchedReportVersion = matchedAudit?.version,
                     selfSignedNotice = "Self-Signed Certificate (PoC): ลายเซ็นตรวจสอบความสมบูรณ์ (Integrity) ผ่านตามมาตรฐาน CMS/SHA-256 แต่โปรแกรมอ่าน PDF ภายนอกจะแจ้งเตือนว่ายังไม่รู้จักผู้ออกใบรับรอง (Untrusted Root CA) จนกว่าจะติดตั้งใบรับรองใน Trust Store",
                     message = if (overallValid) {
                         "ตรวจสอบสำเร็จ: ลายเซ็นดิจิทัลถูกต้อง (VALID) และเอกสารไม่ถูกแก้ไขหลังการลงนาม"
@@ -142,9 +106,7 @@ class PdfVerificationService(
                 )
             }
         } catch (ex: Exception) {
-            println("=== PDF VERIFICATION EXCEPTION ===")
-            ex.printStackTrace()
-            SignatureVerificationResponse(
+            SignatureVerificationResult(
                 isValid = false,
                 isTampered = true,
                 signatureFound = true,
@@ -159,19 +121,12 @@ class PdfVerificationService(
                 byteRange = null,
                 coversWholeDocument = false,
                 fileSha256 = fileSha256,
-                matchedAuditLog = false,
-                matchedReportVersion = null,
                 selfSignedNotice = "Verification failed due to corrupted PDF or invalid CMS structure.",
                 message = "ตรวจพบการแก้ไขหรือโครงสร้างลายเซ็นเสียหาย: ${ex.message}"
             )
         }
     }
 
-    /**
-     * Helper to simulate byte-level tampering on a signed PDF for PoC demonstration.
-     * Alters 1 ASCII byte inside the signed byte range (keeping exact byte offsets intact)
-     * so the PDF still opens cleanly in Adobe Reader / pyHanko while failing SHA-256 CMS verification.
-     */
     fun createTamperedCopy(signedPdfBytes: ByteArray): ByteArray {
         val copy = signedPdfBytes.clone()
         Loader.loadPDF(signedPdfBytes).use { doc ->
@@ -182,7 +137,6 @@ class PdfVerificationService(
             val replacement = "Tamperd".toByteArray(Charsets.US_ASCII)
 
             var tampered = false
-            // Search within the signed byte ranges [0..br[1]] and [br[2]..br[2]+br[3]]
             val ranges = listOf(0 until br[1], br[2] until (br[2] + br[3]))
             for (range in ranges) {
                 for (i in range.first..(range.last - marker.size)) {

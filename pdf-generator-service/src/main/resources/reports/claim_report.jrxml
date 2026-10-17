@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport name="claim_report" pageWidth="595" pageHeight="842" columnWidth="515"
+              leftMargin="40" rightMargin="40" topMargin="35" bottomMargin="35"
+              summaryNewPage="true"
+              uuid="7b3f1a20-9a10-4c9a-9f00-123456789abc">
+
+    <style name="ThaiBase" default="true" fontName="Sarabun" fontSize="11.0" pdfFontName="Sarabun" pdfEncoding="Identity-H" pdfEmbedded="true"/>
+
+    <parameter name="reportId" class="java.lang.String"/>
+    <parameter name="claimNumber" class="java.lang.String"/>
+    <parameter name="policyNumber" class="java.lang.String"/>
+    <parameter name="claimantName" class="java.lang.String"/>
+    <parameter name="incidentDate" class="java.lang.String"/>
+    <parameter name="incidentDescription" class="java.lang.String"/>
+    <parameter name="hospitalOrGarage" class="java.lang.String"/>
+    <parameter name="version" class="java.lang.Integer"/>
+    <parameter name="snapshotCreatedAt" class="java.lang.String"/>
+    <parameter name="totalAmount" class="java.lang.String"/>
+    <parameter name="signerSubject" class="java.lang.String"/>
+    <parameter name="claimantSignatureImage" class="java.lang.Object"/>
+    <parameter name="approverSignatureImage" class="java.lang.Object"/>
+    <parameter name="officialStampImage" class="java.lang.Object"/>
+
+    <field name="itemNo" class="java.lang.Integer"/>
+    <field name="description" class="java.lang.String"/>
+    <field name="category" class="java.lang.String"/>
+    <field name="amountFormatted" class="java.lang.String"/>
+
+    <!-- PAGE 1: TITLE & CLAIMANT / POLICY OVERVIEW -->
+    <title height="255" splitType="Stretch">
+        <element kind="rectangle" uuid="11111111-1111-1111-1111-111111111101" x="0" y="0" width="515" height="60" backcolor="#1E293B">
+            <pen lineWidth="0.0"/>
+        </element>
+        <element kind="staticText" uuid="11111111-1111-1111-1111-111111111102" x="16" y="10" width="340" height="24" forecolor="#FFFFFF" fontName="Sarabun" fontSize="15.0" bold="true" vTextAlign="Middle">
+            <text><![CDATA[รายงานการเรียกร้องค่าสินไหมทดแทน (ใบเคลมประกันภัย)]]></text>
+        </element>
+        <element kind="staticText" uuid="11111111-1111-1111-1111-111111111103" x="16" y="34" width="340" height="18" forecolor="#CBD5E1" fontName="Sarabun" fontSize="9.0" bold="false" vTextAlign="Middle">
+            <text><![CDATA[OpenSource Insurance PoC — Digitally Signed Official Multi-Page Report (JasperReports 7.1.0)]]></text>
+        </element>
+        <element kind="textField" uuid="11111111-1111-1111-1111-111111111104" x="360" y="12" width="140" height="20" forecolor="#38BDF8" fontName="Sarabun" fontSize="12.0" bold="true" hTextAlign="Right" vTextAlign="Middle">
+            <expression><![CDATA["ฉบับที่: v" + $P{version}]]></expression>
+        </element>
+        <element kind="textField" uuid="11111111-1111-1111-1111-111111111105" x="360" y="32" width="140" height="18" forecolor="#E2E8F0" fontName="Sarabun" fontSize="10.0" hTextAlign="Right" vTextAlign="Middle">
+            <expression><![CDATA["เลขที่เคลม: " + $P{claimNumber}]]></expression>
+        </element>
+
+        <element kind="rectangle" uuid="11111111-1111-1111-1111-111111111106" x="0" y="70" width="515" height="175" backcolor="#F8FAFC">
+            <pen lineWidth="0.75" lineColor="#CBD5E1"/>
+        </element>
+
+        <element kind="staticText" uuid="11111111-1111-1111-1111-111111111120" x="14" y="76" width="486" height="20" forecolor="#0284C7" fontName="Sarabun" fontSize="11.0" bold="true" vTextAlign="Middle">
+            <text><![CDATA[ส่วนที่ 1: ข้อมูลผู้เอาประกันภัยและรายละเอียดอุบัติเหตุ (Insured & Incident Details)]]></text>
+        </element>
+
+        <element kind="textField" uuid="11111111-1111-1111-1111-111111111107" x="14" y="100" width="240" height="20" fontName="Sarabun" fontSize="10.0" bold="true" vTextAlign="Middle">
+            <expression><![CDATA["ชื่อผู้เอาประกันภัย: " + $P{claimantName}]]></expression>
+        </element>
+        <element kind="textField" uuid="11111111-1111-1111-1111-111111111108" x="265" y="100" width="235" height="20" fontName="Sarabun" fontSize="10.0" bold="true" vTextAlign="Middle">
+            <expression><![CDATA["เลขที่กรมธรรม์: " + $P{policyNumber}]]></expression>
+        </element>
+
+        <element kind="textField" uuid="11111111-1111-1111-1111-111111111109" x="14" y="122" width="240" height="20" fontName="Sarabun" fontSize="10.0" vTextAlign="Middle">
+            <expression><![CDATA["วันที่เกิดเหตุ: " + $P{incidentDate}]]></expression>
+        </element>
+        <element kind="textField" uuid="11111111-1111-1111-1111-111111111110" x="265" y="122" width="235" height="20" fontName="Sarabun" fontSize="10.0" vTextAlign="Middle">
+            <expression><![CDATA["สถานพยาบาล / ศูนย์ซ่อม: " + $P{hospitalOrGarage}]]></expression>
+        </element>
+
+        <element kind="textField" uuid="11111111-1111-1111-1111-111111111111" x="14" y="146" width="486" height="60" fontName="Sarabun" fontSize="10.0" vTextAlign="Top">
+            <expression><![CDATA["รายละเอียดเหตุการณ์: " + $P{incidentDescription} + "\nการตรวจสอบเบื้องต้น: ได้รับแจ้งเหตุถูกต้องตรงตามเงื่อนไขความคุ้มครองของสัญญาประกันภัย เอกสารหลักฐานประกอบการเรียกร้องค่าสินไหมครบถ้วนสมบูรณ์"]]></expression>
+        </element>
+
+        <element kind="textField" uuid="11111111-1111-1111-1111-111111111112" x="14" y="214" width="486" height="24" forecolor="#64748B" fontName="Sarabun" fontSize="8.0" vTextAlign="Middle">
+            <expression><![CDATA["รหัสอ้างอิงเอกสาร (UUID): " + $P{reportId} + "  |  เวลาบันทึก Snapshot: " + $P{snapshotCreatedAt}]]></expression>
+        </element>
+    </title>
+
+    <!-- PAGE 1: CLAIM ITEMS TABLE -->
+    <columnHeader height="32" splitType="Stretch">
+        <element kind="rectangle" uuid="22222222-2222-2222-2222-222222222201" x="0" y="0" width="515" height="28" backcolor="#E2E8F0">
+            <pen lineWidth="0.5" lineColor="#94A3B8"/>
+        </element>
+        <element kind="staticText" uuid="22222222-2222-2222-2222-222222222202" x="8" y="4" width="42" height="20" fontName="Sarabun" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[ลำดับ]]></text>
+        </element>
+        <element kind="staticText" uuid="22222222-2222-2222-2222-222222222203" x="56" y="4" width="234" height="20" fontName="Sarabun" fontSize="10.0" bold="true" vTextAlign="Middle">
+            <text><![CDATA[รายการค่าสินไหมทดแทนที่ขออนุมัติ (Description)]]></text>
+        </element>
+        <element kind="staticText" uuid="22222222-2222-2222-2222-222222222204" x="295" y="4" width="105" height="20" fontName="Sarabun" fontSize="10.0" bold="true" vTextAlign="Middle">
+            <text><![CDATA[หมวดหมู่ค่าเสียหาย]]></text>
+        </element>
+        <element kind="staticText" uuid="22222222-2222-2222-2222-222222222205" x="405" y="4" width="100" height="20" fontName="Sarabun" fontSize="10.0" bold="true" hTextAlign="Right" vTextAlign="Middle">
+            <text><![CDATA[จำนวนเงิน (บาท)]]></text>
+        </element>
+    </columnHeader>
+
+    <detail>
+        <band height="30" splitType="Stretch">
+            <element kind="rectangle" uuid="33333333-3333-3333-3333-333333333301" x="0" y="0" width="515" height="30" backcolor="#FFFFFF">
+                <pen lineWidth="0.5" lineColor="#CBD5E1"/>
+            </element>
+            <element kind="textField" uuid="33333333-3333-3333-3333-333333333302" x="8" y="5" width="42" height="20" fontName="Sarabun" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+                <expression><![CDATA[$F{itemNo}]]></expression>
+            </element>
+            <element kind="textField" uuid="33333333-3333-3333-3333-333333333303" x="56" y="5" width="234" height="20" fontName="Sarabun" fontSize="10.0" vTextAlign="Middle">
+                <expression><![CDATA[$F{description}]]></expression>
+            </element>
+            <element kind="textField" uuid="33333333-3333-3333-3333-333333333304" x="295" y="5" width="105" height="20" fontName="Sarabun" fontSize="9.0" vTextAlign="Middle">
+                <expression><![CDATA[$F{category}]]></expression>
+            </element>
+            <element kind="textField" uuid="33333333-3333-3333-3333-333333333305" x="405" y="5" width="100" height="20" fontName="Sarabun" fontSize="10.0" bold="true" hTextAlign="Right" vTextAlign="Middle">
+                <expression><![CDATA[$F{amountFormatted}]]></expression>
+            </element>
+        </band>
+    </detail>
+
+    <!-- PAGE FOOTER (DISPLAYS PAGE 1 OF 2, PAGE 2 OF 2) -->
+    <pageFooter height="24" splitType="Stretch">
+        <element kind="line" uuid="55555555-5555-5555-5555-555555555501" x="0" y="2" width="515" height="1" forecolor="#CBD5E1"/>
+        <element kind="textField" uuid="55555555-5555-5555-5555-555555555502" x="0" y="6" width="300" height="16" forecolor="#64748B" fontName="Sarabun" fontSize="8.0" vTextAlign="Middle">
+            <expression><![CDATA["เอกสารเคลมประกันภัย: " + $P{claimNumber} + " (v" + $P{version} + ") | Detached CMS Signed"]]></expression>
+        </element>
+        <element kind="textField" uuid="55555555-5555-5555-5555-555555555503" x="350" y="6" width="165" height="16" forecolor="#64748B" fontName="Sarabun" fontSize="8.0" hTextAlign="Right" vTextAlign="Middle">
+            <expression><![CDATA["หน้า " + $V{PAGE_NUMBER} + " จาก 2"]]></expression>
+        </element>
+    </pageFooter>
+
+    <!-- PAGE 2: SUMMARY, SETTLEMENT TERMS, AND OFFICIAL SIGNATURE SECTION -->
+    <summary height="620" splitType="Stretch">
+        <!-- Header for Page 2 -->
+        <element kind="rectangle" uuid="66666666-6666-6666-6666-666666666601" x="0" y="0" width="515" height="42" backcolor="#1E293B">
+            <pen lineWidth="0.0"/>
+        </element>
+        <element kind="staticText" uuid="66666666-6666-6666-6666-666666666602" x="16" y="6" width="340" height="18" forecolor="#FFFFFF" fontName="Sarabun" fontSize="12.0" bold="true" vTextAlign="Middle">
+            <text><![CDATA[ส่วนที่ 2: สรุปผลการพิจารณา ข้อตกลง และลายมือชื่ออนุมัติ]]></text>
+        </element>
+        <element kind="staticText" uuid="66666666-6666-6666-6666-666666666603" x="16" y="24" width="340" height="14" forecolor="#94A3B8" fontName="Sarabun" fontSize="8.0" vTextAlign="Middle">
+            <text><![CDATA[Claim Settlement Terms & Official Digital Signature Execution Page]]></text>
+        </element>
+        <element kind="textField" uuid="66666666-6666-6666-6666-666666666604" x="360" y="10" width="140" height="20" forecolor="#38BDF8" fontName="Sarabun" fontSize="10.0" bold="true" hTextAlign="Right" vTextAlign="Middle">
+            <expression><![CDATA["เอกสารอ้างอิง: " + $P{claimNumber}]]></expression>
+        </element>
+
+        <!-- Total Amount Card -->
+        <element kind="rectangle" uuid="66666666-6666-6666-6666-666666666605" x="0" y="52" width="515" height="40" backcolor="#EFF6FF">
+            <pen lineWidth="1.0" lineColor="#3B82F6"/>
+        </element>
+        <element kind="staticText" uuid="66666666-6666-6666-6666-666666666606" x="16" y="60" width="220" height="24" forecolor="#1E3A8A" fontName="Sarabun" fontSize="12.0" bold="true" vTextAlign="Middle">
+            <text><![CDATA[รวมยอดเงินค่าสินไหมทดแทนสุทธิที่อนุมัติ:]]></text>
+        </element>
+        <element kind="textField" uuid="66666666-6666-6666-6666-666666666607" x="240" y="60" width="260" height="24" forecolor="#1D4ED8" fontName="Sarabun" fontSize="14.0" bold="true" hTextAlign="Right" vTextAlign="Middle">
+            <expression><![CDATA[$P{totalAmount} + " บาท"]]></expression>
+        </element>
+
+        <!-- Settlement Terms & Conditions -->
+        <element kind="rectangle" uuid="66666666-6666-6666-6666-666666666608" x="0" y="102" width="515" height="120" backcolor="#F8FAFC">
+            <pen lineWidth="0.5" lineColor="#CBD5E1"/>
+        </element>
+        <element kind="staticText" uuid="66666666-6666-6666-6666-666666666609" x="14" y="108" width="486" height="18" forecolor="#0F172A" fontName="Sarabun" fontSize="10.0" bold="true" vTextAlign="Middle">
+            <text><![CDATA[ข้อกำหนดและเงื่อนไขการตกลงระงับข้อพิพาทค่าสินไหมทดแทน (Terms of Settlement):]]></text>
+        </element>
+        <element kind="staticText" uuid="66666666-6666-6666-6666-666666666610" x="14" y="128" width="486" height="88" forecolor="#334155" fontName="Sarabun" fontSize="9.0" vTextAlign="Top">
+            <text><![CDATA[1. ผู้เอาประกันภัย/ผู้เรียกร้อง ตกลงยอมรับจำนวนเงินค่าสินไหมทดแทนสุทธิดังกล่าวข้างต้น เพื่อเป็นการชดใช้ความเสียหายตามสัญญาประกันภัยอย่างสมบูรณ์ และถือเป็นข้อยุติตามประมวลกฎหมายแพ่งและพาณิชย์
+2. บริษัทฯ จะดำเนินการโอนเงินเข้าบัญชีของผู้มีสิทธิรับผลประโยชน์ภายใน 15 วันทำการ นับแต่วันที่เอกสารฉบับนี้ได้รับการลงนามครบถ้วน
+3. เอกสารฉบับนี้ถูกจัดทำขึ้นในรูปแบบข้อมูลอิเล็กทรอนิกส์และลงนามด้วยลายมือชื่อดิจิทัลที่มีการเข้ารหัสลับตามพระราชบัญญัติว่าด้วยธุรกรรมทางอิเล็กทรอนิกส์ พ.ศ. 2544 และฉบับแก้ไขเพิ่มเติม]]></text>
+        </element>
+
+        <!-- ============================================== -->
+        <!-- SIGNATURE SECTION (2 COLUMNS: CLAIMANT & APPROVER) -->
+        <!-- ============================================== -->
+
+        <!-- Column 1: Claimant Signature Block -->
+        <element kind="rectangle" uuid="77777777-7777-7777-7777-777777777701" x="0" y="235" width="250" height="205" backcolor="#FFFFFF">
+            <pen lineWidth="0.75" lineColor="#94A3B8"/>
+        </element>
+        <element kind="staticText" uuid="77777777-7777-7777-7777-777777777702" x="12" y="242" width="226" height="18" forecolor="#0F172A" fontName="Sarabun" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[ผู้เอาประกันภัย / ผู้เรียกร้องค่าสินไหม]]></text>
+        </element>
+        <element kind="staticText" uuid="77777777-7777-7777-7777-777777777703" x="12" y="260" width="226" height="14" forecolor="#64748B" fontName="Sarabun" fontSize="8.0" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[(Claimant Acknowledgement)]]></text>
+        </element>
+
+        <!-- Claimant Signature: Render Image if available, fallback to styled text -->
+        <element kind="image" uuid="77777777-7777-7777-7777-777777777704" x="25" y="278" width="200" height="42" scaleImage="RetainShape" hImageAlign="Center" vImageAlign="Middle">
+            <printWhenExpression><![CDATA[$P{claimantSignatureImage} != null]]></printWhenExpression>
+            <expression><![CDATA[$P{claimantSignatureImage}]]></expression>
+        </element>
+        <element kind="staticText" uuid="77777777-7777-7777-7777-777777777714" x="20" y="285" width="210" height="32" forecolor="#1D4ED8" fontName="Sarabun" fontSize="18.0" bold="true" italic="true" hTextAlign="Center" vTextAlign="Middle">
+            <printWhenExpression><![CDATA[$P{claimantSignatureImage} == null]]></printWhenExpression>
+            <text><![CDATA[สมชาย ใจดี]]></text>
+        </element>
+
+        <element kind="line" uuid="77777777-7777-7777-7777-777777777705" x="25" y="322" width="200" height="1" forecolor="#64748B">
+            <pen lineStyle="Dashed"/>
+        </element>
+
+        <element kind="textField" uuid="77777777-7777-7777-7777-777777777706" x="12" y="330" width="226" height="18" fontName="Sarabun" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+            <expression><![CDATA["( " + $P{claimantName} + " )"]]></expression>
+        </element>
+        <element kind="staticText" uuid="77777777-7777-7777-7777-777777777707" x="12" y="348" width="226" height="16" forecolor="#64748B" fontName="Sarabun" fontSize="9.0" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[ผู้เอาประกันภัย / ผู้มีอำนาจเรียกร้อง]]></text>
+        </element>
+        <element kind="textField" uuid="77777777-7777-7777-7777-777777777708" x="12" y="366" width="226" height="16" forecolor="#64748B" fontName="Sarabun" fontSize="8.0" hTextAlign="Center" vTextAlign="Middle">
+            <expression><![CDATA["วันที่รับรอง: " + $P{incidentDate}]]></expression>
+        </element>
+
+        <!-- Column 2: Official Digital Signature & Approver Block -->
+        <element kind="rectangle" uuid="88888888-8888-8888-8888-888888888801" x="265" y="235" width="250" height="205" backcolor="#F0FDF4">
+            <pen lineWidth="1.0" lineColor="#16A34A"/>
+        </element>
+        <element kind="staticText" uuid="88888888-8888-8888-8888-888888888802" x="275" y="242" width="230" height="18" forecolor="#166534" fontName="Sarabun" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[ผู้มีอำนาจลงนามและอนุมัติฝ่ายสินไหมทดแทน]]></text>
+        </element>
+        <element kind="staticText" uuid="88888888-8888-8888-8888-888888888803" x="275" y="260" width="230" height="14" forecolor="#15803D" fontName="Sarabun" fontSize="8.0" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[Authorized Claim Approver & Digital Signer]]></text>
+        </element>
+
+        <!-- Official Seal / Stamp Badge Box -->
+        <element kind="rectangle" uuid="88888888-8888-8888-8888-888888888804" x="275" y="276" width="165" height="42" backcolor="#DCFCE7">
+            <pen lineWidth="0.75" lineColor="#22C55E"/>
+        </element>
+        <element kind="staticText" uuid="88888888-8888-8888-8888-888888888805" x="278" y="278" width="160" height="18" forecolor="#15803D" fontName="Sarabun" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[✓ DIGITALLY SIGNED & CERTIFIED]]></text>
+        </element>
+        <element kind="staticText" uuid="88888888-8888-8888-8888-888888888806" x="278" y="296" width="160" height="18" forecolor="#166534" fontName="Sarabun" fontSize="7.5" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[SHA-256 Detached CMS (/adbe.pkcs7.detached)]]></text>
+        </element>
+
+        <!-- Official Stamp Image Overlay -->
+        <element kind="image" uuid="88888888-8888-8888-8888-888888888815" x="445" y="268" width="60" height="60" scaleImage="RetainShape" hImageAlign="Center" vImageAlign="Middle">
+            <printWhenExpression><![CDATA[$P{officialStampImage} != null]]></printWhenExpression>
+            <expression><![CDATA[$P{officialStampImage}]]></expression>
+        </element>
+
+        <!-- Approver Signature Image -->
+        <element kind="image" uuid="88888888-8888-8888-8888-888888888816" x="300" y="320" width="180" height="30" scaleImage="RetainShape" hImageAlign="Center" vImageAlign="Middle">
+            <printWhenExpression><![CDATA[$P{approverSignatureImage} != null]]></printWhenExpression>
+            <expression><![CDATA[$P{approverSignatureImage}]]></expression>
+        </element>
+
+        <element kind="staticText" uuid="88888888-8888-8888-8888-888888888807" x="275" y="348" width="230" height="18" forecolor="#0F172A" fontName="Sarabun" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[( นายธนากร มั่นคง )]]></text>
+        </element>
+        <element kind="staticText" uuid="88888888-8888-8888-8888-888888888808" x="275" y="364" width="230" height="14" forecolor="#475569" fontName="Sarabun" fontSize="8.5" hTextAlign="Center" vTextAlign="Middle">
+            <text><![CDATA[ผู้อำนวยการฝ่ายพิจารณาสินไหมทดแทน]]></text>
+        </element>
+        <element kind="textField" uuid="88888888-8888-8888-8888-888888888809" x="275" y="380" width="230" height="24" forecolor="#059669" fontName="Sarabun" fontSize="8.0" hTextAlign="Center" vTextAlign="Middle">
+            <expression><![CDATA["เวลาที่ลงนามดิจิทัล (Signed At):\n" + $P{snapshotCreatedAt}]]></expression>
+        </element>
+        <element kind="textField" uuid="88888888-8888-8888-8888-888888888810" x="275" y="405" width="230" height="32" forecolor="#475569" fontName="Sarabun" fontSize="7.0" hTextAlign="Center" vTextAlign="Top">
+            <expression><![CDATA["Signer: " + $P{signerSubject}]]></expression>
+        </element>
+
+        <!-- Bottom Cryptographic Notice Box -->
+        <element kind="rectangle" uuid="99999999-9999-9999-9999-999999999901" x="0" y="455" width="515" height="120" backcolor="#F1F5F9">
+            <pen lineWidth="0.5" lineColor="#CBD5E1"/>
+        </element>
+        <element kind="staticText" uuid="99999999-9999-9999-9999-999999999902" x="14" y="462" width="486" height="20" forecolor="#0F172A" fontName="Sarabun" fontSize="10.0" bold="true" vTextAlign="Middle">
+            <text><![CDATA[คำชี้แจงความสมบูรณ์แห่งลายเซ็นดิจิทัลเข้ารหัส (Cryptographic Integrity Certification):]]></text>
+        </element>
+        <element kind="staticText" uuid="99999999-9999-9999-9999-999999999903" x="14" y="484" width="486" height="85" forecolor="#334155" fontName="Sarabun" fontSize="9.0" vTextAlign="Top">
+            <text><![CDATA[• รายงานฉบับนี้เป็นเอกสาร 2 หน้าที่ถูกสร้างขึ้นในหน่วยความจำและลงนามดิจิทัลครอบคลุมเนื้อหาทั้งฉบับแบบ Detached CMS (/adbe.pkcs7.detached) ด้วยอัลกอริทึม SHA-256 with RSA (2048-bit)
+• ข้อมูลภาพลายมือชื่อและตรายางรับรองดิจิทัลข้างต้น ถูกผูกเข้ากับ Cryptographic Signature Dictionary ภายในโครงสร้างไบนารีของเอกสาร PDF โดยตรง
+• หากมีการแก้ไข ดัดแปลง หรือปลอมแปลงส่วนใดส่วนหนึ่งของเอกสารทั้งในหน้า 1 หรือหน้า 2 แม้เพียง 1 ไบต์ ลายเซ็นดิจิทัลจะเปลี่ยนสถานะเป็น INVALID ทันที
+• สามารถตรวจสอบความถูกต้องและรายละเอียดใบรับรองผู้ออกเอกสารผ่าน Adobe Acrobat Reader หรือฟังก์ชัน Verify ของระบบ]]></text>
+        </element>
+    </summary>
+</jasperReport>

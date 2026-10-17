@@ -15,10 +15,11 @@ spring:
     open-in-view: false
   servlet:
     multipart:
-      max-file-size: 20MB
-      max-request-size: 20MB
+      max-file-size: 30MB
+      max-request-size: 30MB
 
-keystore:
-  path: ${KEYSTORE_PATH:../certs/keystore.p12}
-  password: ${KEYSTORE_PASSWORD:changeit_local_poc}
-  alias: ${KEYSTORE_ALIAS:claimsigner}
+services:
+  pdf-generator:
+    url: ${PDF_GENERATOR_SERVICE_URL:http://localhost:8082}
+  signing:
+    url: ${SIGNING_SERVICE_URL:http://localhost:8081}
