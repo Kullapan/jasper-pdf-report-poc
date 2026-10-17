@@ -100,3 +100,12 @@ docker compose up --build -d
 * **Claim Business API:** `http://localhost:8080/api/reports`
 * **Digital Signing Service Health:** `http://localhost:8081/api/v1/signatures/health`
 * **PDF Generator Service Health:** `http://localhost:8082/api/v1/pdf/health`
+
+---
+
+## 5. เอกสารประกอบที่เกี่ยวข้อง (Related Documentation)
+
+1. [ARCHITECTURE.md](file:///c:/KK/Workspace/jasper-pdf-repor_poct/ARCHITECTURE.md) — คู่มือสถาปัตยกรรมระดับลึก (Sequence Diagram, API Contracts, Asset Management & Key Isolation)
+2. [TEST_REPORT.md](file:///c:/KK/Workspace/jasper-pdf-repor_poct/TEST_REPORT.md) — รายงานผลการทดสอบระบบทั้ง 6 Test Cases (On-The-Fly, Detached CMS, Snapshot Versioning, Tamper Detection, Multi-page)
+3. [SECURITY_VULNERABILITY_REPORT.md](file:///c:/KK/Workspace/jasper-pdf-repor_poct/SECURITY_VULNERABILITY_REPORT.md) — รายงานการตรวจสอบความปลอดภัยของ Dependencies ด้วย Trivy (100% Zero Vulnerabilities across all 4 targets)
+
