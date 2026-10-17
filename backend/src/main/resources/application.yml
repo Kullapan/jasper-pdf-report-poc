@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: claim-report-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/claimdb}
+    username: ${SPRING_DATASOURCE_USERNAME:claimuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:claimpass_local_poc}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+keystore:
+  path: ${KEYSTORE_PATH:../certs/keystore.p12}
+  password: ${KEYSTORE_PASSWORD:changeit_local_poc}
+  alias: ${KEYSTORE_ALIAS:claimsigner}

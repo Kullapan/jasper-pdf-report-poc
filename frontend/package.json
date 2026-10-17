@@ -1,0 +1,26 @@
+{
+  "name": "claim-report-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173 --host",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 5173"
+  },
+  "dependencies": {
+    "pdfjs-dist": "4.6.82",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.11",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.2",
+    "typescript": "5.5.4",
+    "vite": "5.4.8"
+  },
+  "overrides": {
+    "tar": "7.5.21"
+  }
+}

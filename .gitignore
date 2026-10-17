@@ -1,0 +1,26 @@
+# Secrets & Keystores (NEVER commit private keys or .env)
+.env
+certs/
+*.p12
+*.pfx
+*.key
+*.pem
+
+# Build & Dependencies
+backend/.gradle/
+backend/build/
+backend/target/
+frontend/node_modules/
+frontend/dist/
+
+# IDE & OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Test Temporary Outputs
+test-results/*.pdf
+test-results/*-TAMPERED.pdf
+stress-summary.json

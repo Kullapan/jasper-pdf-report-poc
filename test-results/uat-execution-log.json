@@ -1,0 +1,22 @@
+[
+  {
+    "tc": "TC-01",
+    "detail": "In-Memory Signed Blob SHA-256 (Preview === Download): 19b0c5fa7f90c8ed7c4278ff6007341a84095ff63b5f2061ac483249a47401a7"
+  },
+  {
+    "tc": "TC-02",
+    "detail": "✅ VALID SIGNATURE — ตรวจสอบสำเร็จ: ลายเซ็นดิจิทัลถูกต้อง (VALID) และเอกสารไม่ถูกแก้ไขหลังการลงนาม\nSubFilter:\nadbe.pkcs7.detached\nDigest OID:\n2.16.840.1.101.3.4.2.1 (SHA-256)\nSigner Subject:\nCN=Claim Report PoC Signer,OU=Digital Claims Architecture,O=OpenSource Insurance PoC,L=Bangkok,C=TH\nCert Serial:\nA842C12762F617E1\nSigned At:\n2026-10-17T05:47:44Z\nByteRange:\n[0,23612,42558,928] (Covers Whole File: true)\nFile SHA-256:\n19b0c5fa7f90c8ed7c4278ff6007341a84095ff63b5f2061ac483249a47401a7\nAudit Log Match:\nตรงกับประวัติการออกเอกสาร (Version v1)\nℹ️ Self-Signed Certificate (PoC): ลายเซ็นตรวจสอบความสมบูรณ์ (Integrity) ผ่านตามมาตรฐาน CMS/SHA-256 แต่โปรแกรมอ่าน PDF ภายนอกจะแจ้งเตือนว่ายังไม่รู้จักผู้ออกใบรับรอง (Untrusted Root CA) จนกว่าจะติดตั้งใบรับรองใน Trust Store"
+  },
+  {
+    "tc": "TC-03",
+    "detail": "In-Memory Signed Blob SHA-256 (Preview === Download): 0afee64f62c25ee7812786dd4a30a2c554949c69fbbd7a58405eed1958ec0cd6\n✅ VALID SIGNATURE — ตรวจสอบสำเร็จ: ลายเซ็นดิจิทัลถูกต้อง (VALID) และเอกสารไม่ถูกแก้ไขหลังการลงนาม\nSubFilter:\nadbe.pkcs7.detached\nDigest OID:\n2.16.840.1.101.3.4.2.1 (SHA-256)\nSigner Subject:\nCN=Claim Report PoC Signer,OU=Digital Claims Architecture,O=OpenSource Insurance PoC,L=Bangkok,C=TH\nCert Serial:\nA842C12762F617E1\nSigned At:\n2026-10-17T05:47:50Z\nByteRange:\n[0,23609,42555,928] (Covers Whole File: true)\nFile SHA-256:\n0afee64f62c25ee7812786dd4a30a2c554949c69fbbd7a58405eed1958ec0cd6\nAudit Log Match:\nตรงกับประวัติการออกเอกสาร (Version v2)\nℹ️ Self-Signed Certificate (PoC): ลายเซ็นตรวจสอบความสมบูรณ์ (Integrity) ผ่านตามมาตรฐาน CMS/SHA-256 แต่โปรแกรมอ่าน PDF ภายนอกจะแจ้งเตือนว่ายังไม่รู้จักผู้ออกใบรับรอง (Untrusted Root CA) จนกว่าจะติดตั้งใบรับรองใน Trust Store"
+  },
+  {
+    "tc": "TC-04",
+    "detail": "✅ VALID SIGNATURE — ตรวจสอบสำเร็จ: ลายเซ็นดิจิทัลถูกต้อง (VALID) และเอกสารไม่ถูกแก้ไขหลังการลงนาม\nSubFilter:\nadbe.pkcs7.detached\nDigest OID:\n2.16.840.1.101.3.4.2.1 (SHA-256)\nSigner Subject:\nCN=Claim Report PoC Signer,OU=Digital Claims Architecture,O=OpenSource Insurance PoC,L=Bangkok,C=TH\nCert Serial:\nA842C12762F617E1\nSigned At:\n2026-10-17T05:47:54Z\nByteRange:\n[0,23612,42558,928] (Covers Whole File: true)\nFile SHA-256:\n24d9b18ddfcb917bf0503330213b82d8a308e42828c2f08fc79d0a2001f3e95a\nAudit Log Match:\nตรงกับประวัติการออกเอกสาร (Version v1)\nℹ️ Self-Signed Certificate (PoC): ลายเซ็นตรวจสอบความสมบูรณ์ (Integrity) ผ่านตามมาตรฐาน CMS/SHA-256 แต่โปรแกรมอ่าน PDF ภายนอกจะแจ้งเตือนว่ายังไม่รู้จักผู้ออกใบรับรอง (Untrusted Root CA) จนกว่าจะติดตั้งใบรับรองใน Trust Store"
+  },
+  {
+    "tc": "TC-05",
+    "detail": "❌ INVALID / TAMPERED SIGNATURE — ตรวจพบการแก้ไขหรือโครงสร้างลายเซ็นเสียหาย: message-digest attribute value does not match calculated value\nSubFilter:\n-\nDigest OID:\n(SHA-256)\nSigner Subject:\n-\nCert Serial:\n-\nSigned At:\n-\nByteRange:\n- (Covers Whole File: false)\nFile SHA-256:\n37dcfe5fa7cda6d8da50251ea8db2cf68c06aab4c637b14a96ee105ffaf0aaa0\nAudit Log Match:\nไม่ตรงกับ Audit Log (ไฟล์อาจถูกแก้ไขหลังดาวน์โหลด)\nℹ️ Verification failed due to corrupted PDF or invalid CMS structure."
+  }
+]
